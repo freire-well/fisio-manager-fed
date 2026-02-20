@@ -97,6 +97,14 @@ export default function FisioManager(): React.ReactElement {
         fetchPatients().then(setPatients);
     }, []);
 
+    useEffect(() => {
+        // Recarrega agendamentos quando o modal fecha
+        if (!showAddModal) {
+            fetchAppointments().then(setAppointments);
+            fetchPatients().then(setPatients);
+        }
+    }, [showAddModal]);
+
     const openPatientRecord = async (paciente: Paciente): Promise<void> => {
         setSelectedPatient(paciente);
         if (paciente.prontuario?.id) {
@@ -152,12 +160,11 @@ export default function FisioManager(): React.ReactElement {
 
     const handleDeleteAppointment = (id: number): void => {
         api.delete(`/agendamentos/${id}`)
-            .then(() => fetchAppointments())
+            .then(() => fetchAppointments().then(setAppointments))
             .catch(err => {
                 console.error('Erro ao deletar agendamento:', err);
                 alert('Erro ao deletar agendamento');
             });
-        console.log('Deletar agendamento:', id);
     };
 
     return (
@@ -230,12 +237,11 @@ export default function FisioManager(): React.ReactElement {
 
             <AddAppointmentModal 
                 isOpen={showAddModal}
-                patients={patients} // TODO: Integrar com Context para usar pacientes do estado global
+                patients={patients}
                 onClose={() => setShowAddModal(false)}
-                onSave={(apt) => {
-                    console.log('Novo agendamento:', apt);
+                onSave={() => {
                     setShowAddModal(false);
-                    // TODO: Integrar com Context quando adicionado addAppointment
+                    fetchAppointments().then(setAppointments);
                 }}
             />
 

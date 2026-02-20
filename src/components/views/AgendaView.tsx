@@ -9,6 +9,7 @@ interface AgendaViewProps {
   onAddAppointment: () => void;
   onSelectAppointment: (appointment: any) => void;
   onDeleteAppointment: (id: number) => void;
+  onRefreshAppointments?: () => Promise<void>;
   patients: Paciente[];
 }
 
@@ -221,7 +222,7 @@ export function AgendaView({
                   );
                 })}
               </div>
-              {Array.from({ length: 12 }, (_, i) => i + 8).map(hour => (
+              {Array.from({ length: 14 }, (_, i) => i + 7).map(hour => (
                 <div key={hour} className="grid grid-cols-8 border-b border-app-border last:border-b-0">
                   <div className="p-4 font-semibold border-r border-app-border bg-app-bg">
                     {hour}:00
