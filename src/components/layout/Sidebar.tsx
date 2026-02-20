@@ -34,6 +34,7 @@ export function Sidebar({ isOpen, onClose, currentView, onViewChange }: SidebarP
             <FileIcon />
             Prontuários
           </button>
+         
         </nav>
       </aside>
 

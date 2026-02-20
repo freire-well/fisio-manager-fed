@@ -10,16 +10,7 @@ import { ProntuarioForm } from '@/components/ProntuarioForm';
 import { AddAppointmentModal } from '@/components/modals/AddAppointmentModal';
 import { Paciente } from '@/components/Paciente';
 import { Prontuario } from '@/components/Prontuario';
-
-export interface Appointment {
-  id: number;
-  paciente: Paciente;
-  patientId: number;
-  date: string;
-  time: string;
-  type: string;
-  prontuario?: Prontuario;
-}
+import { Agendamento } from '@/components/Agendamento';
 
 const API_URL = 'http://localhost:8080/api';
 
@@ -50,17 +41,30 @@ const fetchPatients = async () : Promise<Paciente[]> => {
         return [] as Paciente[];
     }
 };
+
+const fetchAppointments = async (): Promise<Agendamento[]> => {
+
+    try {
+        const response = await fetch(`${API_URL}/agendamentos`);
+        if (!response.ok) throw new Error('Erro ao buscar agendamentos');
+        return await response.json();
+    } catch (err) {
+        console.error('Erro ao carregar agendamentos:', err);
+        return [] as Agendamento[];
+    }
+};
                            
 
 export default function FisioManager(): React.ReactElement {
     const { 
         currentView, setCurrentView, sidebarOpen, setSidebarOpen,
-        appointments, selectedPatient, setSelectedPatient,
-        fetchAppointments, error, clearError
+          selectedPatient, setSelectedPatient,
+         error, clearError
     } = useAppContext();
 
     const [showAddModal, setShowAddModal] = useState(false);
     const [patients, setPatients] = useState<Paciente[]>([]);
+    const [appointments, setAppointments] = useState<Agendamento[]>([]);
     const [prontuarioData, setProntuarioData] = useState<Prontuario>({
         id: undefined,
         nomeCompleto: '',
@@ -95,8 +99,8 @@ export default function FisioManager(): React.ReactElement {
     });
 
     useEffect(() => {
-        fetchAppointments();
-    }, [fetchAppointments]);
+        fetchAppointments().then(setAppointments);
+    }, []);
 
     useEffect(() => {
         fetchPatients().then(setPatients);
@@ -121,17 +125,52 @@ export default function FisioManager(): React.ReactElement {
                 console.error('Erro ao carregar prontuário:', err);
             }
         } else {
-            setProntuarioData(prev => ({
-                ...prev,
+            setProntuarioData({
+                id: undefined,
                 nomeCompleto: paciente.nome,
-                telefone: paciente.telefone
-            }));
+                dataNascimento: new Date(),
+                idade: '',
+                sexo: '',
+                profissao: '',
+                telefone: paciente.telefone || '',
+                endereco: '',
+                antecedentes: '',
+                medicamentos: '',
+                cirurgias: '',
+                queixaPrincipal: '',
+                inicioSintomas: '',
+                fatoresAgravantes: '',
+                fatoresAtenuantes: '',
+                inspecao: '',
+                palpacao: '',
+                adm: '',
+                forcaMuscular: '',
+                testesEspeciais: '',
+                diagnostico: '',
+                objetivosCurto: '',
+                objetivosMedio: '',
+                objetivosLongo: '',
+                condutas: '',
+                tecnicas: '',
+                exercicios: '',
+                orientacoes: '',
+                frequencia: '',
+                sessoes: []
+            });
         }
         setCurrentView('prontuario');
     };
 
     const handleDeleteAppointment = (id: number): void => {
-        // TODO: Fazer integração com Context quando adicionado deleteAppointment
+        fetch(`${API_URL}/agendamentos/${id}`, {
+            method: 'DELETE',
+        }).then(response => {
+            if (!response.ok) throw new Error('Erro ao deletar agendamento');
+            fetchAppointments();
+        }).catch(err => {
+            console.error('Erro ao deletar agendamento:', err);
+            alert('Erro ao deletar agendamento');
+        });
         console.log('Deletar agendamento:', id);
     };
 
@@ -166,6 +205,7 @@ export default function FisioManager(): React.ReactElement {
                     {currentView === 'agenda' && (
                         <AgendaView 
                             appointments={appointments}
+                            patients={patients}
                             onAddAppointment={() => setShowAddModal(true)}
                             onSelectAppointment={openPatientRecord}
                             onDeleteAppointment={handleDeleteAppointment}
@@ -189,12 +229,22 @@ export default function FisioManager(): React.ReactElement {
                             onSelectPatient={openPatientRecord}
                         />
                     )}
+                    {currentView === 'prontuarios' && selectedPatient && (
+                        <ProntuarioForm 
+                            prontuario={prontuarioData}
+                            paciente={selectedPatient}
+                            onBack={() => setCurrentView('agenda')}
+                            onSave={(data) => {
+                                saveProntuary(data);
+                            }}
+                        />
+                    )}
                 </main>
             </div>
 
             <AddAppointmentModal 
                 isOpen={showAddModal}
-                patients={[]}
+                patients={patients} // TODO: Integrar com Context para usar pacientes do estado global
                 onClose={() => setShowAddModal(false)}
                 onSave={(apt) => {
                     console.log('Novo agendamento:', apt);
@@ -202,6 +252,7 @@ export default function FisioManager(): React.ReactElement {
                     // TODO: Integrar com Context quando adicionado addAppointment
                 }}
             />
+
         </div>
     );
 }

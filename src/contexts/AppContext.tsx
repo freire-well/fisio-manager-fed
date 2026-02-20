@@ -1,8 +1,8 @@
 'use client';
 
 import React, { createContext, useState, useCallback, useMemo, ReactNode } from 'react';
-import { Appointment } from '@/app/page';
 import { Paciente } from '@/components/Paciente';
+import { Agendamento } from '@/components/Agendamento';
 
 const API_URL = 'http://localhost:8080/api';
 
@@ -14,8 +14,8 @@ export interface AppContextType {
   setSidebarOpen: (open: boolean) => void;
 
   // Data State
-  appointments: Appointment[];
-  setAppointments: (appointments: Appointment[]) => void;
+  appointments: Agendamento[];
+  setAppointments: (appointments: Agendamento[]) => void;
   patients: Paciente[];
   setPatients: (patients: Paciente[]) => void;
   selectedPatient: Paciente | null;
@@ -26,7 +26,7 @@ export interface AppContextType {
   error: string | null;
   
   // Actions
-  addAppointment: (appointment: Omit<Appointment, 'id'>) => Promise<void>;
+  addAppointment: (appointment: Omit<Agendamento, 'id'>) => Promise<void>;
   deleteAppointment: (id: number) => Promise<void>;
   fetchAppointments: () => Promise<void>;
   fetchPatients: () => Promise<void>;
@@ -45,7 +45,7 @@ export function AppProvider({ children }: AppProviderProps): React.ReactElement 
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Data State
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [appointments, setAppointments] = useState<Agendamento[]>([]);
   const [patients, setPatients] = useState<Paciente[]>([]);
   const [selectedPatient, setSelectedPatient] = useState<Paciente | null>(null);
 
@@ -54,7 +54,7 @@ export function AppProvider({ children }: AppProviderProps): React.ReactElement 
   const [error, setError] = useState<string | null>(null);
 
   // Actions
-  const addAppointment = useCallback(async (appointment: Omit<Appointment, 'id'>): Promise<void> => {
+  const addAppointment = useCallback(async (appointment: Omit<Agendamento, 'id'>): Promise<void> => {
     try {
       setLoading(true);
       setError(null);
@@ -65,7 +65,7 @@ export function AppProvider({ children }: AppProviderProps): React.ReactElement 
       });
       if (!response.ok) throw new Error('Erro ao criar agendamento');
       
-      const newAppointment: Appointment = await response.json();
+      const newAppointment: Agendamento = await response.json();
       setAppointments(prev => [...prev, newAppointment]);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao criar agendamento';
@@ -102,7 +102,7 @@ export function AppProvider({ children }: AppProviderProps): React.ReactElement 
       setError(null);
       const response = await fetch(`${API_URL}/agendamentos`);
       if (!response.ok) throw new Error('Erro ao buscar agendamentos');
-      const data: Appointment[] = await response.json();
+      const data: Agendamento[] = await response.json();
       setAppointments(data);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao buscar agendamentos';

@@ -1,5 +1,5 @@
 // src/components/ProntuarioForm.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BackIcon, PrintIcon, PlusIcon } from './Icons'; 
 import { Paciente } from './Paciente';
 import { Prontuario } from './Prontuario';
@@ -12,39 +12,40 @@ interface ProntuarioFormProps {
 }
 
 export function ProntuarioForm({ paciente, onBack, onSave, prontuario }: ProntuarioFormProps) {
+    const [isNewRecord, setIsNewRecord] = useState(!prontuario || !prontuario.id);
 
     const [formData, setFormData] = useState({
         patientId: paciente.id || 0,
-        id: prontuario?.id,
-        nomeCompleto: prontuario?.nomeCompleto || paciente.nome || '',
-            dataNascimento: prontuario?.dataNascimento,
-            idade: prontuario?.idade || '',
-            sexo: prontuario?.sexo || '',
-            profissao: prontuario?.profissao || '',
-            telefone: prontuario?.telefone || '',
-            endereco: prontuario?.endereco || '',
-            antecedentes: prontuario?.antecedentes || '',
-            medicamentos: prontuario?.medicamentos || '',
-            cirurgias: prontuario?.cirurgias || '',
-            queixaPrincipal: prontuario?.queixaPrincipal || '',
-            inicioSintomas: prontuario?.inicioSintomas || '',
-            fatoresAgravantes: prontuario?.fatoresAgravantes || '',
-            fatoresAtenuantes: prontuario?.fatoresAtenuantes || '',
-            inspecao: prontuario?.inspecao || '',
-            palpacao: prontuario?.palpacao || '',
-            adm: prontuario?.adm || '',
-            forcaMuscular: prontuario?.forcaMuscular || '',
-            testesEspeciais: prontuario?.testesEspeciais || '',
-            diagnostico: prontuario?.diagnostico || '',
-            objetivosCurto: prontuario?.objetivosCurto || '',
-            objetivosMedio: prontuario?.objetivosMedio || '',
-            objetivosLongo: prontuario?.objetivosLongo || '',
-            condutas: prontuario?.condutas || '',
-            tecnicas: prontuario?.tecnicas || '',
-            exercicios: prontuario?.exercicios || '',
-            orientacoes: prontuario?.orientacoes || '',
-            frequencia: prontuario?.frequencia || '',
-            sessoes: prontuario?.sessoes || []
+        id: prontuario?.id || undefined,
+        nomeCompleto: isNewRecord ? paciente.nome || '' : prontuario?.nomeCompleto || paciente.nome || '',
+            dataNascimento: isNewRecord ? '' : (prontuario?.dataNascimento || ''),
+            idade: isNewRecord ? '' : (prontuario?.idade || ''),
+            sexo: isNewRecord ? '' : (prontuario?.sexo || ''),
+            profissao: isNewRecord ? '' : (prontuario?.profissao || ''),
+            telefone: isNewRecord ? '' : (prontuario?.telefone || ''),
+            endereco: isNewRecord ? '' : (prontuario?.endereco || ''),
+            antecedentes: isNewRecord ? '' : (prontuario?.antecedentes || ''),
+            medicamentos: isNewRecord ? '' : (prontuario?.medicamentos || ''),
+            cirurgias: isNewRecord ? '' : (prontuario?.cirurgias || ''),
+            queixaPrincipal: isNewRecord ? '' : (prontuario?.queixaPrincipal || ''),
+            inicioSintomas: isNewRecord ? '' : (prontuario?.inicioSintomas || ''),
+            fatoresAgravantes: isNewRecord ? '' : (prontuario?.fatoresAgravantes || ''),
+            fatoresAtenuantes: isNewRecord ? '' : (prontuario?.fatoresAtenuantes || ''),
+            inspecao: isNewRecord ? '' : (prontuario?.inspecao || ''),
+            palpacao: isNewRecord ? '' : (prontuario?.palpacao || ''),
+            adm: isNewRecord ? '' : (prontuario?.adm || ''),
+            forcaMuscular: isNewRecord ? '' : (prontuario?.forcaMuscular || ''),
+            testesEspeciais: isNewRecord ? '' : (prontuario?.testesEspeciais || ''),
+            diagnostico: isNewRecord ? '' : (prontuario?.diagnostico || ''),
+            objetivosCurto: isNewRecord ? '' : (prontuario?.objetivosCurto || ''),
+            objetivosMedio: isNewRecord ? '' : (prontuario?.objetivosMedio || ''),
+            objetivosLongo: isNewRecord ? '' : (prontuario?.objetivosLongo || ''),
+            condutas: isNewRecord ? '' : (prontuario?.condutas || ''),
+            tecnicas: isNewRecord ? '' : (prontuario?.tecnicas || ''),
+            exercicios: isNewRecord ? '' : (prontuario?.exercicios || ''),
+            orientacoes: isNewRecord ? '' : (prontuario?.orientacoes || ''),
+            frequencia: isNewRecord ? '' : (prontuario?.frequencia || ''),
+            sessoes: isNewRecord ? [] : (prontuario?.sessoes || [])
     });
 
     // Atualiza campo simples
@@ -72,6 +73,48 @@ export function ProntuarioForm({ paciente, onBack, onSave, prontuario }: Prontua
         setFormData(prev => ({ ...prev, sessoes: newSessoes }));
     };
 
+    // Reseta o formulário quando o prontuário ou paciente mudar
+    useEffect(() => {
+        const newIsNewRecord = !prontuario || !prontuario.id;
+        setIsNewRecord(newIsNewRecord);
+        
+        console.log('Resetting form - isNewRecord:', newIsNewRecord, 'paciente:', paciente.nome, 'prontuario:', prontuario);
+        
+        setFormData({
+            patientId: paciente.id || 0,
+            id: prontuario?.id || undefined,
+            nomeCompleto: newIsNewRecord ? paciente.nome || '' : prontuario?.nomeCompleto || paciente.nome || '',
+            dataNascimento: newIsNewRecord ? '' : (prontuario?.dataNascimento || ''),
+            idade: newIsNewRecord ? '' : (prontuario?.idade || ''),
+            sexo: newIsNewRecord ? '' : (prontuario?.sexo || ''),
+            profissao: newIsNewRecord ? '' : (prontuario?.profissao || ''),
+            telefone: newIsNewRecord ? '' : (prontuario?.telefone || ''),
+            endereco: newIsNewRecord ? '' : (prontuario?.endereco || ''),
+            antecedentes: newIsNewRecord ? '' : (prontuario?.antecedentes || ''),
+            medicamentos: newIsNewRecord ? '' : (prontuario?.medicamentos || ''),
+            cirurgias: newIsNewRecord ? '' : (prontuario?.cirurgias || ''),
+            queixaPrincipal: newIsNewRecord ? '' : (prontuario?.queixaPrincipal || ''),
+            inicioSintomas: newIsNewRecord ? '' : (prontuario?.inicioSintomas || ''),
+            fatoresAgravantes: newIsNewRecord ? '' : (prontuario?.fatoresAgravantes || ''),
+            fatoresAtenuantes: newIsNewRecord ? '' : (prontuario?.fatoresAtenuantes || ''),
+            inspecao: newIsNewRecord ? '' : (prontuario?.inspecao || ''),
+            palpacao: newIsNewRecord ? '' : (prontuario?.palpacao || ''),
+            adm: newIsNewRecord ? '' : (prontuario?.adm || ''),
+            forcaMuscular: newIsNewRecord ? '' : (prontuario?.forcaMuscular || ''),
+            testesEspeciais: newIsNewRecord ? '' : (prontuario?.testesEspeciais || ''),
+            diagnostico: newIsNewRecord ? '' : (prontuario?.diagnostico || ''),
+            objetivosCurto: newIsNewRecord ? '' : (prontuario?.objetivosCurto || ''),
+            objetivosMedio: newIsNewRecord ? '' : (prontuario?.objetivosMedio || ''),
+            objetivosLongo: newIsNewRecord ? '' : (prontuario?.objetivosLongo || ''),
+            condutas: newIsNewRecord ? '' : (prontuario?.condutas || ''),
+            tecnicas: newIsNewRecord ? '' : (prontuario?.tecnicas || ''),
+            exercicios: newIsNewRecord ? '' : (prontuario?.exercicios || ''),
+            orientacoes: newIsNewRecord ? '' : (prontuario?.orientacoes || ''),
+            frequencia: newIsNewRecord ? '' : (prontuario?.frequencia || ''),
+            sessoes: newIsNewRecord ? [] : (prontuario?.sessoes || [])
+        });
+    }, [JSON.stringify(prontuario), paciente.id]);
+
     return (
         <div className="animate-in fade-in duration-300 pb-10">
             {/* Header / Toolbar */}
@@ -84,7 +127,15 @@ export function ProntuarioForm({ paciente, onBack, onSave, prontuario }: Prontua
                         <BackIcon />
                         Voltar
                     </button>
-                    <h2 className="text-2xl font-bold">Prontuário - {paciente.nome}</h2>
+                    <div>
+                        <h2 className="text-2xl font-bold">Prontuário - {paciente.nome}</h2>
+                        {isNewRecord && (
+                            <p className="text-sm text-app-text/60 mt-1">Novo prontuário (em branco)</p>
+                        )}
+                        {!isNewRecord && (
+                            <p className="text-sm text-app-text/60 mt-1">Editando prontuário existente</p>
+                        )}
+                    </div>
                 </div>
                 <div className="flex gap-3">
                     <button
@@ -104,6 +155,14 @@ export function ProntuarioForm({ paciente, onBack, onSave, prontuario }: Prontua
             </div>
 
             <div id="printable-area" className="space-y-6">
+                
+                {/* Alerta para novo prontuário */}
+                {isNewRecord && (
+                    <div className="bg-blue-50 border border-blue-200 rounded p-4 mb-4 text-blue-800">
+                        <p className="font-semibold">✨ Novo Prontuário</p>
+                        <p className="text-sm">Todos os campos estão em branco. Preencha as informações do paciente e clique em <strong>Salvar</strong> para criar o prontuário.</p>
+                    </div>
+                )}
                 
                 {/* 1. Dados e Histórico */}
                 <section className="bg-app-surface border border-app-border rounded p-6">
