@@ -51,7 +51,7 @@ export function AgendaView({
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [optimisticAppointments, setOptimisticAppointments] = useState<Agendamento[]>(appointments);
-  const [blockedSlots, setBlockedSlots] = useState<Set<string>>(new Set());
+  const [blockedSlots, setBlockedSlots] = useState<Map<string, string>>(new Map());
   const today = new Date();
   const currentMonth = today.getMonth();
   const currentYear = today.getFullYear();
@@ -64,11 +64,11 @@ export function AgendaView({
   useEffect(() => {
     const fetchBlockedSlots = async () => {
       try {
-        const data = await api.get<Array<{ date: string; time: string }>>('/horarios-bloqueados');
-        const slots = new Set<string>();
-        data.forEach((slot: { date: string; time: string }) => {
+        const data = await api.get<Array<{ date: string; time: string; id: string }>>('/horarios-bloqueados');
+        const slots = new Map<string, string>();
+        data.forEach((slot: { date: string; time: string; id: string }) => {
           const hour = slot.time.split(':')[0];
-          slots.add(`${slot.date}:${hour}`);
+          slots.set(`${slot.date}:${hour}`, slot.id);
         });
         setBlockedSlots(slots);
       } catch (error) {
@@ -80,11 +80,11 @@ export function AgendaView({
 
   const toggleBlockSlot = async (dateStr: string, hour: number) => {
     const slotKey = `${dateStr}:${String(hour).padStart(2, '0')}`;
-    const newBlockedSlots = new Set(blockedSlots);
+    const newBlockedSlots = new Map(blockedSlots);
     const isBlocking = !newBlockedSlots.has(slotKey);
     
     if (isBlocking) {
-      newBlockedSlots.add(slotKey);
+      newBlockedSlots.set(slotKey, '');
     } else {
       newBlockedSlots.delete(slotKey);
     }
@@ -98,18 +98,18 @@ export function AgendaView({
           time: `${String(hour).padStart(2, '0')}:00`
         });
       } else {
-        await api.delete('/horarios-bloqueados', { 
-          date: dateStr,
-          time: `${String(hour).padStart(2, '0')}:00`
-        });
+        const slotId = blockedSlots.get(slotKey);
+        if (slotId) {
+          await api.delete(`/horarios-bloqueados/${slotId}`);
+        }
       }
     } catch (error) {
       console.error('Erro ao bloquear/desbloquear horário:', error);
-      const revertedSlots = new Set(blockedSlots);
+      const revertedSlots = new Map(blockedSlots);
       if (isBlocking) {
         revertedSlots.delete(slotKey);
       } else {
-        revertedSlots.add(slotKey);
+        revertedSlots.set(slotKey, '');
       }
       setBlockedSlots(revertedSlots);
       alert('Erro ao atualizar disponibilidade do horário');
