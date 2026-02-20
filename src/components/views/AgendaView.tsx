@@ -127,7 +127,6 @@ export function AgendaView({
         return;
       }
       
-      const previousAppointments = optimisticAppointments;
       const updatedAppointments = optimisticAppointments.map(apt => 
         apt.id === appointmentId 
           ? { ...apt, date: newDate, time: newTime || apt.time }
