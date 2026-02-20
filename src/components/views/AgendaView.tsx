@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { api } from '@/services/api';
 import { PlusIcon } from '../Icons';
 import { Agendamento } from '../Agendamento';
 import { Paciente } from '../Paciente';
@@ -39,8 +40,6 @@ const getFirstDayOfMonth = (date: Date): number => {
   return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
 };
 
-const API_URL = 'http://localhost:8080/api';
-
 export function AgendaView({ 
   appointments,
   patients, 
@@ -65,16 +64,13 @@ export function AgendaView({
   useEffect(() => {
     const fetchBlockedSlots = async () => {
       try {
-        const response = await fetch(`${API_URL}/horarios-bloqueados`);
-        if (response.ok) {
-          const data = await response.json();
-          const slots = new Set<string>();
-          data.forEach((slot: { date: string; time: string }) => {
-            const hour = slot.time.split(':')[0];
-            slots.add(`${slot.date}:${hour}`);
-          });
-          setBlockedSlots(slots);
-        }
+        const data = await api.get<Array<{ date: string; time: string }>>('/horarios-bloqueados');
+        const slots = new Set<string>();
+        data.forEach((slot: { date: string; time: string }) => {
+          const hour = slot.time.split(':')[0];
+          slots.add(`${slot.date}:${hour}`);
+        });
+        setBlockedSlots(slots);
       } catch (error) {
         console.error('Erro ao carregar horários bloqueados:', error);
       }
@@ -96,14 +92,17 @@ export function AgendaView({
     setBlockedSlots(newBlockedSlots);
     
     try {
-      await fetch(`${API_URL}/horarios-bloqueados`, {
-        method: isBlocking ? 'POST' : 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+      if (isBlocking) {
+        await api.post('/horarios-bloqueados', { 
           date: dateStr,
           time: `${String(hour).padStart(2, '0')}:00`
-        })
-      });
+        });
+      } else {
+        await api.delete('/horarios-bloqueados', { 
+          date: dateStr,
+          time: `${String(hour).padStart(2, '0')}:00`
+        });
+      }
     } catch (error) {
       console.error('Erro ao bloquear/desbloquear horário:', error);
       const revertedSlots = new Set(blockedSlots);
@@ -137,21 +136,12 @@ export function AgendaView({
       
       setOptimisticAppointments(updatedAppointments);
       
-      const response = await fetch(`${API_URL}/agendamentos/${appointmentId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          date: newDate,
-          paciente_id: appointment.paciente_id,
-          time: newTime || appointment.time,
-          type: appointment.type
-        })
+      await api.post(`/agendamentos/${appointmentId}`, { 
+        date: newDate,
+        paciente_id: appointment.paciente_id,
+        time: newTime || appointment.time,
+        type: appointment.type
       });
-
-      if (!response.ok) {
-        setOptimisticAppointments(previousAppointments);
-        throw new Error('Erro ao atualizar data do agendamento');
-      }
     } catch (error) {
       console.error('Erro ao atualizar agendamento:', error);
       alert('Erro ao atualizar data do agendamento');

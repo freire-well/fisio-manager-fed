@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { api } from '@/services/api';
 import { CloseIcon } from '../Icons';
 import { Paciente } from '../Paciente';
 import { Agendamento } from '../Agendamento';
@@ -37,16 +38,12 @@ export function AddAppointmentModal({ isOpen, patients, onClose, onSave }: AddAp
 
 
   const saveAppointment = async (): Promise<void> => {
-    await fetch('http://localhost:8080/api/agendamentos', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        paciente: patients_list.find(p => p.id === formData.patientId),
-        patientId: formData.patientId,
-        date: formData.date,
-        time: formData.time,
-        type: formData.type,
-      }),
+    await api.put('/agendamentos', {
+      paciente: patients_list.find(p => p.id === formData.patientId),
+      patientId: formData.patientId,
+      date: formData.date,
+      time: formData.time,
+      type: formData.type,
     });
   };
 
@@ -57,15 +54,7 @@ export function AddAppointmentModal({ isOpen, patients, onClose, onSave }: AddAp
     }
 
     try {
-      const response = await fetch('http://localhost:8080/api/pacientes', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newPatientData),
-      });
-
-      if (!response.ok) throw new Error('Erro ao salvar paciente');
-      
-      const newPatient = await response.json();
+      const newPatient = await api.put<Paciente>('/pacientes', newPatientData);
       
       // Adiciona o novo paciente à lista local
       const updatedPatients = [...patients_list, newPatient];
@@ -99,20 +88,16 @@ export function AddAppointmentModal({ isOpen, patients, onClose, onSave }: AddAp
     
     try {
       // Verifica se o horário está bloqueado
-      const response = await fetch('http://localhost:8080/api/horarios-bloqueados');
-      
-      if (response.ok) {
-        const blockedSlots = await response.json();
-        const hour = formData.time.split(':')[0];
-        const isBlocked = blockedSlots.some((slot: { date: string; time: string }) => 
-          slot.date === formData.date && slot.time.startsWith(hour + ':')
-        );
+      const blockedSlots = await api.get<Array<{ date: string; time: string }>>('/horarios-bloqueados');
+      const hour = formData.time.split(':')[0];
+      const isBlocked = blockedSlots.some((slot: { date: string; time: string }) => 
+        slot.date === formData.date && slot.time.startsWith(hour + ':')
+      );
 
-        if (isBlocked) {
-          setIsCheckingSlot(false);
-          alert('Este horário está bloqueado. Escolha outro horário.');
-          return;
-        }
+      if (isBlocked) {
+        setIsCheckingSlot(false);
+        alert('Este horário está bloqueado. Escolha outro horário.');
+        return;
       }
 
       setIsCheckingSlot(false);

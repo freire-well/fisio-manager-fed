@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { api } from '@/services/api';
 import { useAppContext } from '@/contexts/useAppContext';
 import { Navbar } from '@/components/layout/Navbar';
 import { Sidebar } from '@/components/layout/Sidebar';
@@ -12,18 +13,13 @@ import { Paciente } from '@/components/Paciente';
 import { Prontuario } from '@/components/Prontuario';
 import { Agendamento } from '@/components/Agendamento';
 
-const API_URL = 'http://localhost:8080/api';
-
 const saveProntuary = async (data: Prontuario): Promise<Prontuario> => {
     try {
-        const response = await fetch(`${API_URL}/prontuarios/${data.id || ''}`, {
-            method: data.id ? 'POST' : 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        });
+        const result = data.id 
+            ? await api.post<Prontuario>(`/prontuarios/${data.id}`, data)
+            : await api.put<Prontuario>('/prontuarios', data);
         alert('Prontuário salvo!');
-        if (!response.ok) throw new Error('Erro ao salvar prontuário');
-        return await response.json();
+        return result;
     } catch (error) {
         console.error('API Error:', error);
         return { ...data, id: data.id || Date.now() };
@@ -32,9 +28,7 @@ const saveProntuary = async (data: Prontuario): Promise<Prontuario> => {
 
 const fetchPatients = async () : Promise<Paciente[]> => {
     try {
-        const response = await fetch(`${API_URL}/pacientes`);
-        if (!response.ok) throw new Error('Erro ao buscar pacientes');
-        const data = await response.json();
+        const data = await api.get<Paciente[]>('/pacientes');
         return data;
     } catch (err) {
         console.error('Erro ao carregar pacientes:', err);
@@ -43,11 +37,8 @@ const fetchPatients = async () : Promise<Paciente[]> => {
 };
 
 const fetchAppointments = async (): Promise<Agendamento[]> => {
-
     try {
-        const response = await fetch(`${API_URL}/agendamentos`);
-        if (!response.ok) throw new Error('Erro ao buscar agendamentos');
-        return await response.json();
+        return await api.get<Agendamento[]>('/agendamentos');
     } catch (err) {
         console.error('Erro ao carregar agendamentos:', err);
         return [] as Agendamento[];
@@ -110,9 +101,7 @@ export default function FisioManager(): React.ReactElement {
         setSelectedPatient(paciente);
         if (paciente.prontuario?.id) {
             try {
-                const response = await fetch(`${API_URL}/prontuarios/${paciente.prontuario.id}`);
-                if (!response.ok) throw new Error('Erro ao buscar prontuário');
-                const prontuario: Prontuario = await response.json();
+                const prontuario: Prontuario = await api.get<Prontuario>(`/prontuarios/${paciente.prontuario.id}`);
                 setProntuarioData(prev => ({
                     ...prev,
                     ...prontuario,
@@ -162,15 +151,12 @@ export default function FisioManager(): React.ReactElement {
     };
 
     const handleDeleteAppointment = (id: number): void => {
-        fetch(`${API_URL}/agendamentos/${id}`, {
-            method: 'DELETE',
-        }).then(response => {
-            if (!response.ok) throw new Error('Erro ao deletar agendamento');
-            fetchAppointments();
-        }).catch(err => {
-            console.error('Erro ao deletar agendamento:', err);
-            alert('Erro ao deletar agendamento');
-        });
+        api.delete(`/agendamentos/${id}`)
+            .then(() => fetchAppointments())
+            .catch(err => {
+                console.error('Erro ao deletar agendamento:', err);
+                alert('Erro ao deletar agendamento');
+            });
         console.log('Deletar agendamento:', id);
     };
 

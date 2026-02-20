@@ -1,10 +1,9 @@
 'use client';
 
 import React, { createContext, useState, useCallback, useMemo, ReactNode } from 'react';
+import { api } from '@/services/api';
 import { Paciente } from '@/components/Paciente';
 import { Agendamento } from '@/components/Agendamento';
-
-const API_URL = 'http://localhost:8080/api';
 
 export interface AppContextType {
   // View State
@@ -58,14 +57,7 @@ export function AppProvider({ children }: AppProviderProps): React.ReactElement 
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch(`${API_URL}/agendamentos`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(appointment),
-      });
-      if (!response.ok) throw new Error('Erro ao criar agendamento');
-      
-      const newAppointment: Agendamento = await response.json();
+      const newAppointment: Agendamento = await api.post<Agendamento>('/agendamentos', appointment);
       setAppointments(prev => [...prev, newAppointment]);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao criar agendamento';
@@ -81,10 +73,7 @@ export function AppProvider({ children }: AppProviderProps): React.ReactElement 
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch(`${API_URL}/agendamentos/${id}`, {
-        method: 'DELETE',
-      });
-      if (!response.ok) throw new Error('Erro ao deletar agendamento');
+      await api.delete(`/agendamentos/${id}`);
       setAppointments(prev => prev.filter(a => a.id !== id));
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao deletar agendamento';
@@ -100,9 +89,7 @@ export function AppProvider({ children }: AppProviderProps): React.ReactElement 
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch(`${API_URL}/agendamentos`);
-      if (!response.ok) throw new Error('Erro ao buscar agendamentos');
-      const data: Agendamento[] = await response.json();
+      const data: Agendamento[] = await api.get<Agendamento[]>('/agendamentos');
       setAppointments(data);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao buscar agendamentos';
@@ -117,9 +104,7 @@ export function AppProvider({ children }: AppProviderProps): React.ReactElement 
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch(`${API_URL}/pacientes`);
-      if (!response.ok) throw new Error('Erro ao buscar pacientes');
-      const data: Paciente[] = await response.json();
+      const data: Paciente[] = await api.get<Paciente[]>('/pacientes');
       setPatients(data);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao buscar pacientes';
