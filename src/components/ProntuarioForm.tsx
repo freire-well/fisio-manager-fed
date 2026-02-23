@@ -6,7 +6,7 @@ import { Prontuario } from './Prontuario';
 
 interface ProntuarioFormProps {
     paciente: Paciente;
-    prontuario?: Prontuario; 
+    prontuario: Prontuario; 
     onBack: () => void;
     onSave: (data: any) => void;
 }
@@ -16,7 +16,7 @@ export function ProntuarioForm({ paciente, onBack, onSave, prontuario }: Prontua
 
     const [formData, setFormData] = useState({
         patientId: paciente.id || 0,
-        id: prontuario?.id || undefined,
+        id: prontuario.id || undefined,
         nomeCompleto: isNewRecord ? paciente.nome || '' : prontuario?.nomeCompleto || paciente.nome || '',
             dataNascimento: isNewRecord ? '' : (prontuario?.dataNascimento || ''),
             idade: isNewRecord ? '' : (prontuario?.idade || ''),
