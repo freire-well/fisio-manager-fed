@@ -21,7 +21,7 @@ export function Navbar({ onMenuClick }: NavbarProps): React.ReactElement {
       <div className="flex items-center gap-3">
         <div className="px-4 py-2 bg-app-bg border border-app-border rounded hover:border-app-primary cursor-pointer transition-colors flex items-center gap-2">
           <UserIcon />
-          <span className="font-semibold hidden sm:inline">Dr. Fisioterapeuta</span>
+          <span className="font-semibold hidden sm:inline">Dra. Giovanna</span>
         </div>
       </div>
     </header>
