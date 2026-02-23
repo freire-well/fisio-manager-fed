@@ -17,7 +17,7 @@ const saveProntuary = async (data: Prontuario): Promise<Prontuario> => {
     try {
         const result = data.id 
             ? await api.post<Prontuario>(`/prontuarios/${data.id}`, data)
-            : await api.put<Prontuario>('/prontuarios', data);
+            : await api.put<Prontuario>('/prontuarios/', data);
         alert('Prontuário salvo!');
         return result;
     } catch (error) {
